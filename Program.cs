@@ -1,0 +1,50 @@
+
+using CART_DECISION_TREE.Interfaces;
+using CART_DECISION_TREE.Repositories;
+using Microsoft.EntityFrameworkCore;
+
+namespace CART_DECISION_TREE
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+
+            // Add services to the container.
+
+            builder.Services.AddControllers();
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+
+            builder.Services.AddEndpointsApiExplorer();
+
+            builder.Services.AddTransient<ItrainingSetRepository, trainingSetRepository>();
+            builder.Services.AddTransient<ItestSetRepository, testSetRepository>();
+            builder.Services.AddDbContext<DBContext>(option => option.UseSqlServer(connectionConfiguration.connectionString));
+
+            builder.Services.AddSwaggerGen();
+
+            
+
+            
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+
+            app.MapControllers();
+
+            app.Run();
+        }
+    }
+}
