@@ -59,6 +59,21 @@ namespace CART_DECISION_TREE
 
         }
 
+        [HttpGet("calculateA5")]
+        public double calculateA5()
+        {
+            return _trainingSetRepository.calculateA5();
+
+        }
+
+
+        [HttpGet("calculateA7")]
+        public double calculateA7()
+        {
+            return _trainingSetRepository.calculateA7();
+
+        }
+
         [HttpGet("calculateA8")]
         public double calculateA8()
         {
