@@ -1612,7 +1612,764 @@ namespace CART_DECISION_TREE
             return 500000;
         }
 
+        public double calculateA6()
+        {
+            int total = _context.trainingSet.Count();
 
+            // CANDIDATE INNER SPLIT - 1 {v} {bb,h,j,z,ff,n,dd,o}
+
+            List<trainingSet> candidate1_attr1 = new List<trainingSet>(); // CANDIDATE SPLIT 1 ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate1_attr2 = new List<trainingSet>(); // CANDIDATE SPLIT 2 ATTRIBUTE 2 LIST 
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A6 == "v")
+                {
+                    candidate1_attr1.Add(row); // if v
+                }
+                else
+                {
+                    candidate1_attr2.Add(row); // if other
+                }
+
+            }
+
+            double candidate1_Pl = (double)candidate1_attr1.Count() / total;
+            double candidate1_Pr = (double)candidate1_attr2.Count() / total;
+
+            double candidate1_pJtl_class1 = 0;
+            double candidate1_pJtl_class2 = 0;
+
+            double candidate1_pJtr_class1 = 0;
+            double candidate1_pJtr_class2 = 0;
+
+            foreach (var element in candidate1_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate1_pJtl_class1++;
+
+
+                }
+            }
+            candidate1_pJtl_class1 /= candidate1_attr1.Count();
+
+            foreach (var element in candidate1_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate1_pJtl_class2++;
+
+                }
+            }
+
+            candidate1_pJtl_class2 /= candidate1_attr1.Count();
+
+            foreach (var element in candidate1_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate1_pJtr_class1++;
+                }
+            }
+
+            candidate1_pJtr_class1 /= candidate1_attr2.Count();
+
+
+            foreach (var element in candidate1_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate1_pJtr_class2++;
+                }
+            }
+
+            candidate1_pJtr_class2 /= candidate1_attr2.Count();
+
+            double candidate1_Qst = Math.Abs(candidate1_pJtl_class1 - candidate1_pJtr_class1) +
+                Math.Abs(candidate1_pJtl_class2 - candidate1_pJtr_class2);
+
+            double candidate1_result = candidate1_Qst * 2 * (candidate1_Pl * candidate1_Pr);
+
+            // CANDIDATE INNER SPLIT -1 {v} {bb,h,j,z,ff,n,dd,o}
+
+
+            // CANDIDATE INNER SPLIT - 2 {bb} {h,j,z,ff,n,dd,o,v}
+
+            List<trainingSet> candidate2_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate2_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A9 == "bb")
+                {
+                    candidate2_attr1.Add(row);
+
+                }
+                else
+                {
+
+                    candidate2_attr2.Add(row); // other than "bb"
+
+                }
+            }
+
+            double candidate2_Pl = (double)candidate2_attr1.Count() / total;
+            double candidate2_Pr = (double)candidate2_attr2.Count() / total;
+
+            double candidate2_pJtl_class1 = 0;
+            double candidate2_pJtl_class2 = 0;
+
+            double candidate2_pJtr_class1 = 0;
+            double candidate2_pJtr_class2 = 0;
+
+
+            foreach (var element in candidate2_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate2_pJtl_class1++;
+
+                }
+            }
+            candidate2_pJtl_class1 /= candidate2_attr1.Count();
+
+
+            foreach (var element in candidate2_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate2_pJtl_class2++;
+
+                }
+
+            }
+            candidate2_pJtl_class2 /= candidate2_attr1.Count();
+
+
+            foreach (var element in candidate2_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate2_pJtr_class1++;
+
+                }
+
+            }
+            candidate2_pJtr_class1 /= candidate2_attr2.Count();
+
+
+            foreach (var element in candidate2_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate2_pJtr_class2++;
+
+                }
+            }
+            candidate2_pJtr_class2 /= candidate2_attr2.Count();
+
+
+            double candidate2_Qst = Math.Abs(candidate2_pJtl_class1 - candidate2_pJtr_class1) +
+                Math.Abs(candidate2_pJtl_class2 - candidate2_pJtr_class2);
+
+            double candidate2_result = candidate2_Qst * 2 * (candidate2_Pl * candidate2_Pr);
+
+
+            // CANDIDATE INNER SPLIT - 2 {bb} {h,j,z,ff,n,dd,o,v}
+
+
+
+            // CANDIDATE INNER SPLIT - 3 {h} {bb,j,z,ff,n,dd,o,v}
+
+            
+            List<trainingSet> candidate3_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST
+            List<trainingSet> candidate3_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
+
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A9 == "h")
+                {
+                    candidate3_attr1.Add(row);
+
+                }
+                else
+                {
+                    candidate3_attr2.Add(row); // other than "h"
+                }
+            }
+
+            double candidate3_Pl = (double)candidate3_attr1.Count() / total;
+            double candidate3_Pr = (double)candidate3_attr2.Count() / total;
+
+            double candidate3_pJtl_class1 = 0;
+            double candidate3_pJtl_class2 = 0;
+
+            double candidate3_pJtr_class1 = 0;
+            double candidate3_pJtr_class2 = 0;
+
+            foreach (var element in candidate3_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate3_pJtl_class1++;
+
+                }
+            }
+
+            candidate3_pJtl_class1 /= candidate3_attr1.Count();
+
+
+            foreach (var element in candidate3_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate3_pJtl_class2++;
+
+                }
+
+            }
+            candidate3_pJtl_class2 /= candidate3_attr1.Count();
+
+
+            foreach (var element in candidate3_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate3_pJtr_class1++;
+
+                }
+
+            }
+            candidate3_pJtr_class1 /= candidate3_attr2.Count();
+
+
+            foreach (var element in candidate3_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate3_pJtr_class2++;
+
+                }
+            }
+            candidate3_pJtr_class2 /= candidate3_attr2.Count();
+
+            double candidate_3_Qst = Math.Abs(candidate3_pJtl_class1 - candidate3_pJtr_class1) +
+                Math.Abs(candidate3_pJtl_class2 - candidate3_pJtr_class2);
+
+            double candidate3_result = candidate_3_Qst * 2 * (candidate3_Pl * candidate3_Pr);
+
+
+            // CANDIDATE INNER SPLIT - 3 {h} {bb,j,z,ff,n,dd,o,v}
+
+
+            // CANDIDATE INNER SPLIT - 4 {j} {h,bb,z,ff,n,dd,o,v}
+
+            List<trainingSet> candidate4_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate4_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A5 == "j")
+                {
+                    candidate4_attr1.Add(row);
+
+                }
+                else
+                {
+                    candidate4_attr2.Add(row);
+                }
+            }
+
+            double candidate4_Pl = (double)candidate4_attr1.Count() / total;
+            double candidate4_Pr = (double)candidate4_attr2.Count() / total;
+
+            double candidate4_pJtl_class1 = 0;
+            double candidate4_pJtl_class2 = 0;
+
+            double candidate4_pJtr_class1 = 0;
+            double candidate4_pJtr_class2 = 0;
+
+            foreach (var element in candidate4_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate4_pJtl_class1++;
+
+                }
+            }
+
+            candidate4_pJtl_class1 /= candidate4_attr1.Count();
+
+
+            foreach (var element in candidate4_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate4_pJtl_class2++;
+
+                }
+
+            }
+            candidate4_pJtl_class2 /= candidate4_attr1.Count();
+
+
+            foreach (var element in candidate4_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate4_pJtr_class1++;
+
+                }
+
+            }
+            candidate4_pJtr_class1 /= candidate4_attr2.Count();
+
+
+            foreach (var element in candidate4_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate4_pJtr_class2++;
+
+                }
+            }
+            candidate4_pJtr_class2 /= candidate4_attr2.Count();
+
+            double candidate_4_Qst = Math.Abs(candidate4_pJtl_class1 - candidate4_pJtr_class1) +
+                Math.Abs(candidate4_pJtl_class2 - candidate4_pJtr_class2);
+
+            double candidate4_result = candidate_4_Qst * 2 * (candidate4_Pl * candidate4_Pr);
+
+
+            // CANDIDATE INNER SPLIT - 4  {j} {h,bb,z,ff,n,dd,o,v}
+
+
+
+            // CANDIDATE INNER SPLIT - 5 {z} {j,h,bb,z,ff,n,dd,o,v}
+
+
+            List<trainingSet> candidate5_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate5_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A5 == "z")
+                {
+                    candidate5_attr1.Add(row);
+
+                }
+                else
+                {
+                    candidate5_attr2.Add(row);
+                }
+            }
+
+            double candidate5_Pl = (double)candidate5_attr1.Count() / total;
+            double candidate5_Pr = (double)candidate5_attr2.Count() / total;
+
+            double candidate5_pJtl_class1 = 0;
+            double candidate5_pJtl_class2 = 0;
+
+            double candidate5_pJtr_class1 = 0;
+            double candidate5_pJtr_class2 = 0;
+
+            foreach (var element in candidate5_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate5_pJtl_class1++;
+
+                }
+            }
+
+            candidate5_pJtl_class1 /= candidate5_attr1.Count();
+
+
+            foreach (var element in candidate5_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate5_pJtl_class2++;
+
+                }
+
+            }
+            candidate5_pJtl_class2 /= candidate5_attr1.Count();
+
+
+            foreach (var element in candidate5_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate5_pJtr_class1++;
+
+                }
+
+            }
+            candidate5_pJtr_class1 /= candidate5_attr2.Count();
+
+
+            foreach (var element in candidate5_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate5_pJtr_class2++;
+
+                }
+            }
+            candidate5_pJtr_class2 /= candidate5_attr2.Count();
+
+            double candidate_5_Qst = Math.Abs(candidate5_pJtl_class1 - candidate5_pJtr_class1) +
+                Math.Abs(candidate5_pJtl_class2 - candidate5_pJtr_class2);
+
+            double candidate5_result = candidate_5_Qst * 2 * (candidate5_Pl * candidate5_Pr);
+
+
+            // CANDIDATE INNER SPLIT - 5 {z} {h,bb,z,ff,n,dd,o,v}
+
+
+
+            // CANDIDATE INNER SPLIT - 6 {ff} {z,h,bb,z,n,dd,o,v}
+
+            List<trainingSet> candidate6_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate6_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A5 == "ff")
+                {
+                    candidate6_attr1.Add(row);
+
+                }
+                else
+                {
+                    candidate6_attr2.Add(row);
+                }
+            }
+
+            double candidate6_Pl = (double)candidate6_attr1.Count() / total;
+            double candidate6_Pr = (double)candidate6_attr2.Count() / total;
+
+            double candidate6_pJtl_class1 = 0;
+            double candidate6_pJtl_class2 = 0;
+
+            double candidate6_pJtr_class1 = 0;
+            double candidate6_pJtr_class2 = 0;
+
+            foreach (var element in candidate6_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate6_pJtl_class1++;
+
+                }
+            }
+
+            candidate6_pJtl_class1 /= candidate6_attr1.Count();
+
+
+            foreach (var element in candidate6_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate6_pJtl_class2++;
+
+                }
+
+            }
+            candidate6_pJtl_class2 /= candidate6_attr1.Count();
+
+
+            foreach (var element in candidate6_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate6_pJtr_class1++;
+
+                }
+
+            }
+            candidate6_pJtr_class1 /= candidate6_attr2.Count();
+
+
+            foreach (var element in candidate6_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate6_pJtr_class2++;
+
+                }
+            }
+            candidate6_pJtr_class2 /= candidate6_attr2.Count();
+
+            double candidate_6_Qst = Math.Abs(candidate6_pJtl_class1 - candidate6_pJtr_class1) +
+                Math.Abs(candidate6_pJtl_class2 - candidate6_pJtr_class2);
+
+            double candidate6_result = candidate_6_Qst * 2 * (candidate6_Pl * candidate6_Pr);
+
+            // CANDIDATE INNER SPLIT - 6  {ff} {z,h,bb,z,n,dd,o,v}
+
+
+
+            // CANDIDATE INNER SPLIT - 7  {n} {z,h,bb,z,n,dd,o,v}
+
+
+            List<trainingSet> candidate7_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate7_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A5 == "n")
+                {
+                    candidate7_attr1.Add(row);
+
+                }
+                else
+                {
+                    candidate7_attr2.Add(row);
+                }
+            }
+
+            double candidate7_Pl = (double)candidate7_attr1.Count() / total;
+            double candidate7_Pr = (double)candidate7_attr2.Count() / total;
+
+            double candidate7_pJtl_class1 = 0;
+            double candidate7_pJtl_class2 = 0;
+
+            double candidate7_pJtr_class1 = 0;
+            double candidate7_pJtr_class2 = 0;
+
+            foreach (var element in candidate7_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate7_pJtl_class1++;
+
+                }
+            }
+
+            candidate7_pJtl_class1 /= candidate7_attr1.Count();
+
+
+            foreach (var element in candidate7_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate7_pJtl_class2++;
+
+                }
+
+            }
+            candidate7_pJtl_class2 /= candidate7_attr1.Count();
+
+
+            foreach (var element in candidate7_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate7_pJtr_class1++;
+
+                }
+
+            }
+            candidate7_pJtr_class1 /= candidate7_attr2.Count();
+
+
+            foreach (var element in candidate7_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate7_pJtr_class2++;
+
+                }
+            }
+            candidate7_pJtr_class2 /= candidate7_attr2.Count();
+
+            double candidate_7_Qst = Math.Abs(candidate7_pJtl_class1 - candidate7_pJtr_class1) +
+                Math.Abs(candidate7_pJtl_class2 - candidate7_pJtr_class2);
+
+            double candidate7_result = candidate_7_Qst * 2 * (candidate7_Pl * candidate7_Pr);
+
+            // CANDIDATE INNER SPLIT - 7 {n} {z,h,bb,z,n,dd,o,v}
+
+
+            // CANDIDATE INNER SPLIT - 8 {dd} {n,z,h,bb,z,n,o,v}
+
+
+            List<trainingSet> candidate8_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate8_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A5 == "dd")
+                {
+                    candidate8_attr1.Add(row);
+
+                }
+                else
+                {
+                    candidate8_attr2.Add(row);
+                }
+            }
+
+            double candidate8_Pl = (double)candidate8_attr1.Count() / total;
+            double candidate8_Pr = (double)candidate8_attr2.Count() / total;
+
+            double candidate8_pJtl_class1 = 0;
+            double candidate8_pJtl_class2 = 0;
+
+            double candidate8_pJtr_class1 = 0;
+            double candidate8_pJtr_class2 = 0;
+
+            foreach (var element in candidate8_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate8_pJtl_class1++;
+
+                }
+            }
+
+            candidate8_pJtl_class1 /= candidate8_attr1.Count();
+
+
+            foreach (var element in candidate8_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate8_pJtl_class2++;
+
+                }
+
+            }
+            candidate8_pJtl_class2 /= candidate8_attr1.Count();
+
+
+            foreach (var element in candidate8_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate8_pJtr_class1++;
+
+                }
+
+            }
+            candidate8_pJtr_class1 /= candidate8_attr2.Count();
+
+
+            foreach (var element in candidate8_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate8_pJtr_class2++;
+
+                }
+            }
+            candidate8_pJtr_class2 /= candidate8_attr2.Count();
+
+            double candidate_8_Qst = Math.Abs(candidate8_pJtl_class1 - candidate8_pJtr_class1) +
+                Math.Abs(candidate8_pJtl_class2 - candidate8_pJtr_class2);
+
+            double candidate8_result = candidate_8_Qst * 2 * (candidate8_Pl * candidate8_Pr);
+
+
+            // CANDIDATE INNER SPLIT - 8 {dd} {n,z,h,bb,z,n,o,v}
+
+
+            // CANDIDATE INNER SPLIT - 9 {o} {dd,n,z,h,bb,z,n,o,v}
+
+            List<trainingSet> candidate9_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST 
+            List<trainingSet> candidate9_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST
+
+            foreach (var row in _context.trainingSet)
+            {
+                if (row.A5 == "o")
+                {
+                    candidate9_attr1.Add(row);
+
+                }
+                else
+                {
+                    candidate9_attr2.Add(row);
+                }
+            }
+
+            double candidate9_Pl = (double)candidate9_attr1.Count() / total;
+            double candidate9_Pr = (double)candidate9_attr2.Count() / total;
+
+            double candidate9_pJtl_class1 = 0;
+            double candidate9_pJtl_class2 = 0;
+
+            double candidate9_pJtr_class1 = 0;
+            double candidate9_pJtr_class2 = 0;
+
+            foreach (var element in candidate9_attr1)
+            {
+                if (element.Class == "good")
+                {
+                    candidate9_pJtl_class1++;
+
+                }
+            }
+
+            candidate9_pJtl_class1 /= candidate9_attr1.Count();
+
+
+            foreach (var element in candidate9_attr1)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate9_pJtl_class2++;
+
+                }
+
+            }
+            candidate9_pJtl_class2 /= candidate9_attr1.Count();
+
+
+            foreach (var element in candidate9_attr2)
+            {
+                if (element.Class == "good")
+                {
+                    candidate9_pJtr_class1++;
+
+                }
+
+            }
+            candidate9_pJtr_class1 /= candidate9_attr2.Count();
+
+
+            foreach (var element in candidate9_attr2)
+            {
+                if (element.Class == "bad")
+                {
+                    candidate9_pJtr_class2++;
+
+                }
+            }
+            candidate9_pJtr_class2 /= candidate9_attr2.Count();
+
+            double candidate_9_Qst = Math.Abs(candidate9_pJtl_class1 - candidate9_pJtr_class1) +
+                Math.Abs(candidate9_pJtl_class2 - candidate9_pJtr_class2);
+
+            double candidate9_result = candidate_9_Qst * 2 * (candidate9_Pl * candidate9_Pr);
+
+            // CANDIDATE INNER SPLIT - 9 {o} {dd,n,z,h,bb,z,n,o,v}
+
+
+
+
+
+
+
+
+
+
+            return 6000;
+
+        }
 
         public double calculateA7()
         {

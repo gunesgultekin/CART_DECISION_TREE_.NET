@@ -11,7 +11,7 @@
         public double calculateA4();
         public double calculateA5();
 
-
+        public double calculateA6();    
         public double calculateA7();
         public double calculateA8();
         public double calculateA9();
