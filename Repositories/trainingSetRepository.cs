@@ -6,6 +6,29 @@ using System.Diagnostics.Contracts;
 
 namespace CART_DECISION_TREE
 {
+
+
+    // ***** ALGORITHM *****
+
+    // 1) CALCULATE THE Φ  = 2 * PL * PR * Q(s/t) VALUES FOR 
+    // ALL THE CANDIDATE BINARY SPLITS WITHIN ATTRIBUTES A1,A2,A3,A4,A5,A6,A7,A8 and A9.
+
+    // ( THERE MAY BE INNER CANDIDATE SPLITS ex: A5 - CANDIDATE INNER SPLIT - 1 {cc} {q,i,k,w,c,j,d,aa,e,ff,m,x,r} , // A5 - CANDIDATE INNER SPLIT - 2 {q} {cc,i,k,w,c,j,d,aa,e,ff,m,x,r}
+    // FIRST CALCULATE INNER CANDIDATE SPLIT Φ VALUES THEN PICK THE GREATEST VALUE WITHIN ATTRIBUTE
+
+    // COMPARE ALL Φ VALUES AND CHOOSE THE GREATEST.
+
+    // PLACE CHOSEN VALUE TO THE ROOT OF THE DECISION TREE
+
+    // RECOMPILE TRAINING DATASET:
+
+    // IF (DATASET.ROW.Ax = attributej && class == "class1") -> COUNTy ++
+    // IF (COUNTy = attributej.count()) (IF ALL Ax.attributej values are belong exact one class (result) ) -> THEN LEAF NODE -> DELETE RELATED DATA RECOMPILE
+
+
+    // CONTINUE FROM THE FIRST STEP
+
+
     public class trainingSetRepository : ItrainingSetRepository
     {
         private readonly DBContext _context;
@@ -13,6 +36,24 @@ namespace CART_DECISION_TREE
         {
             _context = context;
         }
+
+        public int createDecisionTree()
+        {
+            /*
+            var decisionTree = new binaryTree<int>();
+            foreach (var value in new[] { 81, 115, 611, 4, 1, 2 })
+                decisionTree.Add(value);
+            var root = decisionTree.Root;
+            Node<int>.print2D(root);
+            return decisionTree.Root.Left.Value;
+            */
+
+
+            return 1;
+        }
+
+        
+
         public async Task<List<trainingSet>> getAllData()
         {
             var set = await _context.trainingSet.ToListAsync();
@@ -390,6 +431,7 @@ namespace CART_DECISION_TREE
 
         public double calculateA5()
         {
+            List<double> allCandidateResults = new List<double>(); // ALL VALUES OF INNER CANDIDATES WILL BE STORED FOR END-COMPARASION
 
             int total = _context.trainingSet.Count();
 
@@ -469,8 +511,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate1_pJtl_class2 - candidate1_pJtr_class2);
 
             double candidate1_result = candidate1_Qst * 2 * (candidate1_Pl * candidate1_Pr);
-
-
+            allCandidateResults.Add(candidate1_result);
             // CANDIDATE INNER SPLIT - 1 {cc} {q,i,k,w,c,j,d,aa,e,ff,m,x,r}
 
 
@@ -555,13 +596,9 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate2_pJtl_class2 - candidate2_pJtr_class2);
 
             double candidate2_result = candidate2_Qst * 2 * (candidate2_Pl * candidate2_Pr);
-
+            allCandidateResults.Add(candidate2_result);
 
             // CANDIDATE INNER SPLIT - 2 {q} {cc,i,k,w,c,j,d,aa,e,ff,m,x,r}
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 3 {i} {cc,q,k,w,c,j,d,aa,e,ff,m,x,r}
 
@@ -640,6 +677,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate3_pJtl_class2 - candidate3_pJtr_class2);
 
             double candidate3_result = candidate_3_Qst * 2 * (candidate3_Pl * candidate3_Pr);
+            allCandidateResults.Add(candidate3_result);
 
             // CANDIDATE INNER SPLIT - 3 {i} {cc,q,k,w,c,j,d,aa,e,ff,m,x,r}
 
@@ -727,17 +765,9 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate4_pJtl_class2 - candidate4_pJtr_class2);
 
             double candidate4_result = candidate_4_Qst * 2 * (candidate4_Pl * candidate4_Pr);
-
+            allCandidateResults.Add(candidate4_result);
 
             // CANDIDATE INNER SPLIT - 4 {k} {i,cc,q,w,c,j,d,aa,e,ff,m,x,r}
-
-
-
-
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 5 {w} {k,i,cc,q,c,j,d,aa,e,ff,m,x,r}
 
@@ -817,16 +847,9 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate5_pJtl_class2 - candidate5_pJtr_class2);
 
             double candidate5_result = candidate_5_Qst * 2 * (candidate5_Pl * candidate5_Pr);
-
+            allCandidateResults.Add(candidate5_result);
 
             // CANDIDATE INNER SPLIT - 5 {w} {k,i,cc,q,c,j,d,aa,e,ff,m,x,r}
-
-
-
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 6 {c} {k,i,cc,q,w,j,d,aa,e,ff,m,x,r}
 
@@ -905,17 +928,8 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate6_pJtl_class2 - candidate6_pJtr_class2);
 
             double candidate6_result = candidate_6_Qst * 2 * (candidate6_Pl * candidate6_Pr);
-
+            allCandidateResults.Add(candidate6_result);
             // CANDIDATE INNER SPLIT - 6 {c} {k,i,cc,q,w,j,d,aa,e,ff,m,x,r}
-
-
-
-
-
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 7 {j} {k,i,cc,q,w,c,d,aa,e,ff,m,x,r}
 
@@ -995,14 +1009,9 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate7_pJtl_class2 - candidate7_pJtr_class2);
 
             double candidate7_result = candidate_7_Qst * 2 * (candidate7_Pl * candidate7_Pr);
-
-
-
-
+            allCandidateResults.Add(candidate7_result);
 
             // CANDIDATE INNER SPLIT - 7 {j} {k,i,cc,q,w,c,d,aa,e,ff,m,x,r}
-
-
 
             // CANDIDATE INNER SPLIT - 8 {d} {j,k,i,cc,q,w,c,aa,e,ff,m,x,r}
 
@@ -1082,17 +1091,9 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate8_pJtl_class2 - candidate8_pJtr_class2);
 
             double candidate8_result = candidate_8_Qst * 2 * (candidate8_Pl * candidate8_Pr);
-
+            allCandidateResults.Add(candidate8_result);
 
             // CANDIDATE INNER SPLIT - 8 {d} {j,k,i,cc,q,w,c,aa,e,ff,m,x,r}
-
-
-
-
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 9 {aa} {j,k,i,cc,q,w,c,d,e,ff,m,x,r}
 
@@ -1171,15 +1172,8 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate9_pJtl_class2 - candidate9_pJtr_class2);
 
             double candidate9_result = candidate_9_Qst * 2 * (candidate9_Pl * candidate9_Pr);
-
+            allCandidateResults.Add(candidate9_result);
             // CANDIDATE INNER SPLIT - 9 {aa} {j,k,i,cc,q,w,c,d,e,ff,m,x,r}
-
-
-
-
-
-
-
 
 
             // CANDIDATE INNER SPLIT - 10 {e} {j,k,i,cc,q,w,c,d,aa,ff,m,x,r}
@@ -1259,16 +1253,8 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate10_pJtl_class2 - candidate10_pJtr_class2);
 
             double candidate10_result = candidate_10_Qst * 2 * (candidate10_Pl * candidate10_Pr);
-
+            allCandidateResults.Add(candidate10_result);
             // CANDIDATE INNER SPLIT - 10 {e} {j,k,i,cc,q,w,c,d,aa,ff,m,x,r}
-
-
-
-
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 11 {ff} {e,j,k,i,cc,q,w,c,d,aa,m,x,r}
 
@@ -1347,15 +1333,8 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate11_pJtl_class2 - candidate11_pJtr_class2);
 
             double candidate11_result = candidate_11_Qst * 2 * (candidate11_Pl * candidate11_Pr);
-
+            allCandidateResults.Add(candidate11_result);
             // CANDIDATE INNER SPLIT - 11 {ff} {e,j,k,i,cc,q,w,c,d,aa,m,x,r}
-
-
-
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 12 {m} {ff,e,j,k,i,cc,q,w,c,d,aa,x,r}
 
@@ -1435,12 +1414,8 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate12_pJtl_class2 - candidate12_pJtr_class2);
 
             double candidate12_result = candidate_12_Qst * 2 * (candidate12_Pl * candidate12_Pr);
-
+            allCandidateResults.Add(candidate12_result);
             // CANDIDATE INNER SPLIT - 12 {m} {ff,e,j,k,i,cc,q,w,c,d,aa,x,r}
-
-
-
-
 
             // CANDIDATE INNER SPLIT - 13 {x} {ff,e,j,k,i,cc,q,w,c,d,aa,r,m}
 
@@ -1519,12 +1494,8 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate13_pJtl_class2 - candidate13_pJtr_class2);
 
             double candidate13_result = candidate_13_Qst * 2 * (candidate13_Pl * candidate13_Pr);
-
+            allCandidateResults.Add(candidate13_result);
             // CANDIDATE INNER SPLIT - 13 {x} {ff,e,j,k,i,cc,q,w,c,d,aa,r,m}
-
-
-
-
 
 
             // CANDIDATE INNER SPLIT - 14 {r} {x,ff,e,j,k,i,cc,q,w,c,d,aa,r,m}
@@ -1606,14 +1577,18 @@ namespace CART_DECISION_TREE
 
 
             double candidate14_result = candidate_14_Qst * 2 * (candidate14_Pl * candidate14_Pr);
+            allCandidateResults.Add(candidate14_result);
 
             // CANDIDATE INNER SPLIT - 14 {r} {x,ff,e,j,k,i,cc,q,w,c,d,aa,r,m}
 
-            return 500000;
+            return allCandidateResults.Max(); // RETURN GREATEST CANDIDATE VALUE
+
         }
 
         public double calculateA6()
         {
+            List<double> allCandidateResults = new List<double>(); // ALL VALUES OF INNER CANDIDATES WILL BE STORED FOR END-COMPARASION
+
             int total = _context.trainingSet.Count();
 
             // CANDIDATE INNER SPLIT - 1 {v} {bb,h,j,z,ff,n,dd,o}
@@ -1690,7 +1665,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate1_pJtl_class2 - candidate1_pJtr_class2);
 
             double candidate1_result = candidate1_Qst * 2 * (candidate1_Pl * candidate1_Pr);
-
+            allCandidateResults.Add(candidate1_result);
             // CANDIDATE INNER SPLIT -1 {v} {bb,h,j,z,ff,n,dd,o}
 
 
@@ -1774,15 +1749,12 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate2_pJtl_class2 - candidate2_pJtr_class2);
 
             double candidate2_result = candidate2_Qst * 2 * (candidate2_Pl * candidate2_Pr);
-
+            allCandidateResults.Add(candidate2_result);
 
             // CANDIDATE INNER SPLIT - 2 {bb} {h,j,z,ff,n,dd,o,v}
 
-
-
             // CANDIDATE INNER SPLIT - 3 {h} {bb,j,z,ff,n,dd,o,v}
 
-            
             List<trainingSet> candidate3_attr1 = new List<trainingSet>(); // ATTRIBUTE 1 LIST
             List<trainingSet> candidate3_attr2 = new List<trainingSet>(); // ATTRIBUTE 2 LIST 
 
@@ -1859,7 +1831,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate3_pJtl_class2 - candidate3_pJtr_class2);
 
             double candidate3_result = candidate_3_Qst * 2 * (candidate3_Pl * candidate3_Pr);
-
+            allCandidateResults.Add(candidate3_result);
 
             // CANDIDATE INNER SPLIT - 3 {h} {bb,j,z,ff,n,dd,o,v}
 
@@ -1941,7 +1913,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate4_pJtl_class2 - candidate4_pJtr_class2);
 
             double candidate4_result = candidate_4_Qst * 2 * (candidate4_Pl * candidate4_Pr);
-
+            allCandidateResults.Add(candidate4_result);
 
             // CANDIDATE INNER SPLIT - 4  {j} {h,bb,z,ff,n,dd,o,v}
 
@@ -2025,7 +1997,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate5_pJtl_class2 - candidate5_pJtr_class2);
 
             double candidate5_result = candidate_5_Qst * 2 * (candidate5_Pl * candidate5_Pr);
-
+            allCandidateResults.Add(candidate5_result);
 
             // CANDIDATE INNER SPLIT - 5 {z} {h,bb,z,ff,n,dd,o,v}
 
@@ -2108,7 +2080,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate6_pJtl_class2 - candidate6_pJtr_class2);
 
             double candidate6_result = candidate_6_Qst * 2 * (candidate6_Pl * candidate6_Pr);
-
+            allCandidateResults.Add(candidate6_result);
             // CANDIDATE INNER SPLIT - 6  {ff} {z,h,bb,z,n,dd,o,v}
 
 
@@ -2191,7 +2163,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate7_pJtl_class2 - candidate7_pJtr_class2);
 
             double candidate7_result = candidate_7_Qst * 2 * (candidate7_Pl * candidate7_Pr);
-
+            allCandidateResults.Add(candidate7_result);
             // CANDIDATE INNER SPLIT - 7 {n} {z,h,bb,z,n,dd,o,v}
 
 
@@ -2273,7 +2245,7 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate8_pJtl_class2 - candidate8_pJtr_class2);
 
             double candidate8_result = candidate_8_Qst * 2 * (candidate8_Pl * candidate8_Pr);
-
+            allCandidateResults.Add(candidate8_result);
 
             // CANDIDATE INNER SPLIT - 8 {dd} {n,z,h,bb,z,n,o,v}
 
@@ -2355,19 +2327,10 @@ namespace CART_DECISION_TREE
                 Math.Abs(candidate9_pJtl_class2 - candidate9_pJtr_class2);
 
             double candidate9_result = candidate_9_Qst * 2 * (candidate9_Pl * candidate9_Pr);
-
+            allCandidateResults.Add(candidate9_result);
             // CANDIDATE INNER SPLIT - 9 {o} {dd,n,z,h,bb,z,n,o,v}
 
-
-
-
-
-
-
-
-
-
-            return 6000;
+            return allCandidateResults.Max(); // RETURN THE CANDIDATE WITH HIGHEST VALUE
 
         }
 

@@ -4,6 +4,8 @@
     {
         public Task<List<trainingSet>> getAllData();
         public HashSet<String> getCandidateSplits();
+
+        public int createDecisionTree();
         public int count();
         public double calculateA1();
         public double calculateA2();

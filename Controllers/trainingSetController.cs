@@ -15,6 +15,55 @@ namespace CART_DECISION_TREE
             this._trainingSetRepository = trainingSetRepository;
 
         }
+
+
+        [HttpGet("createDecisionTreeModel")]
+        public List<double> createDecisionTreeModel()
+        {
+            List <double> results = new List<double>();
+
+            results.Add(_trainingSetRepository.calculateA1());
+            results.Add(_trainingSetRepository.calculateA2());
+            results.Add(_trainingSetRepository.calculateA3());
+            results.Add(_trainingSetRepository.calculateA4());
+            results.Add(_trainingSetRepository.calculateA5());
+            results.Add(_trainingSetRepository.calculateA6());
+            results.Add(_trainingSetRepository.calculateA7());
+            results.Add(_trainingSetRepository.calculateA8());
+            results.Add(_trainingSetRepository.calculateA9());
+
+           
+            var decisionTree = new binaryTree<double>(); // INITIALIZE A BINARY DECISION TREE
+
+            decisionTree.Add(Math.Round(results.Max(),4)); // ROOT OF THE TREE (ACCORDING TO HIGHEST Φ VALUE AFTER CALCULATIONS)
+
+            Random random = new Random();
+
+            
+            for (int i=0;i<9;++i)
+            {
+                if (results[i] != results.Max())
+                {
+                    decisionTree.Add(Math.Round(results[i], 4));
+                    //decisionTree.Add(""+random.Next(1,100));
+
+
+                }
+                
+
+
+            }
+
+     
+            Node<double>.print2D(decisionTree.Root);
+
+            return results;
+
+
+
+        }
+
+
         [HttpGet("getAllTrainingData")]
         public async Task<List<trainingSet>> getAllData()
         {
@@ -30,6 +79,8 @@ namespace CART_DECISION_TREE
 
 
         }
+
+       
 
         [HttpGet("calculateA1")]
         public double calculateA1()
