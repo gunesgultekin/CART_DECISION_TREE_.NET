@@ -19,7 +19,7 @@ namespace CART_DECISION_TREE
 
             builder.Services.AddEndpointsApiExplorer();
 
-            builder.Services.AddTransient<ItrainingSetRepository, trainingSetRepository>();
+            
             builder.Services.AddTransient<ItestSetRepository, testSetRepository>();
             builder.Services.AddDbContext<DBContext>(option => option.UseSqlServer(connectionConfiguration.connectionString));
 
