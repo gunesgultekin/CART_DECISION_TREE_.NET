@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CART_DECISION_TREE.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -72,7 +75,7 @@ namespace CART_DECISION_TREE
         
 
         [HttpGet("CALCULATE A1")]
-        public double CALCULATE_A1()
+        public candidateValues CALCULATE_A1()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -88,7 +91,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i=0;i<elements.Count;++i)
             {
@@ -110,102 +113,153 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))   
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+                    
+                }
+                else if((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+                
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+                
+                currentCandidate.Ax = "A1";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+                
+                candidateValues.Add(currentCandidate);
             
             }
 
-            return candidateValues.Max();  
+            candidateValues MAX = candidateValues[0];
+
+            for (int i=1 ;i<candidateValues.Count();++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+                
+            }
+
+            return MAX;
+
+             
         }
 
         [HttpGet("CALCULATE A2")]
-        public double CALCULATE_A2()
+        public candidateValues CALCULATE_A2()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
             int total = _context.trainingSet.Count();
 
-            double avg = 0; // SPLIT ACCORDING TO MEDIAN VALUE L: <= R: >
-                                                             
+            HashSet<String> hashset = new HashSet<string>(); // HASH SET USED TO STORE UNIQUE VALUES FROM DATASET
+                                                             // IN ORDER TO GET CANDIDATE INNER SPLITS
             foreach (var row in _context.trainingSet)
             {
-                avg += double.Parse(row.A2,CultureInfo.InvariantCulture.NumberFormat);  // SUM OF ALL A2 VALUES
+                hashset.Add(row.A2);
 
             }
 
-            avg /= total;  // SUM OF ALL A2 / TOTAL = MEDIAN VALUE
+            List<string> elements = hashset.ToList();
 
-            List<trainingSet> leftElements = new List<trainingSet>();
-            List<trainingSet> rightElements = new List<trainingSet>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
-           foreach (var row in _context.trainingSet)
-           {
-                if (double.Parse(row.A2) <= avg)
+            for (int i = 0; i < elements.Count; ++i)
+            {
+                string L = elements[i]; // LEFT NODE (for round i)
+                double lCount = _context.trainingSet.Where(e => e.A2 == L).Count();
+                double PL = lCount / total;
+                double PR = Math.Abs(1 - PL);
+
+                double count1 = _context.trainingSet.Where(u => u.A2 == L && u.Class == "good").Count();
+                double PJTL_good = count1
+                    / _context.trainingSet.Where(u => u.A2 == L).Count();
+
+                double PJTL_bad = Math.Abs(1 - PJTL_good);
+
+
+                double count2 = _context.trainingSet.Where(u => u.A2 != L && u.Class == "good").Count();
+                double PJTR_good = count2
+                    / _context.trainingSet.Where(u => u.A2 != L).Count();
+
+                double PJTR_bad = Math.Abs(1 - PJTR_good);
+
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
                 {
-                    leftElements.Add(row);
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
                 }
 
-                else
-                {
-                    rightElements.Add(row);
+                double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
-                }
+                double RESULT = 2 * PL * PR * QST;
+
                 
+                currentCandidate.Ax = "A2";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
 
-           }
+                candidateValues.Add(currentCandidate);
 
-            double lCount = leftElements.Count();
-
-            double PL = lCount / total;
-            double PR = Math.Abs(1 - PL);
-
-            double count1 = 0;
-
-            for (int i=0;i<leftElements.Count();++i)
-            {
-                if (leftElements[i].Class == "good")
-                {
-                    count1++;
-                }
             }
 
-            double PJTL_good = count1
-                    / leftElements.Count();
+            candidateValues MAX = candidateValues[0];
 
-            double PJTL_bad = Math.Abs(1 - PJTL_good);
-
-
-            double count2 = 0;
-
-            for (int i = 0; i < rightElements.Count(); ++i)
+            for (int i = 1; i < candidateValues.Count(); ++i)
             {
-                if (rightElements[i].Class == "good")
+                if (candidateValues[i].ϕ > MAX.ϕ)
                 {
-                    count2++;
+                    MAX = candidateValues[i];
+
                 }
+
             }
 
-            double PJTR_good = count2
-                    / rightElements.Count();
+            return MAX;
 
-            double PJTR_bad = Math.Abs(1 - PJTR_good);
-
-            double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
-
-            double RESULT = 2 * PL * PR * QST;
-
-
-            return RESULT;
-           
 
         }
 
 
         [HttpGet("CALCULATE A3")]
-        public double CALCULATE_A3()
+        public candidateValues CALCULATE_A3()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -221,7 +275,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i = 0; i < elements.Count; ++i)
             {
@@ -243,22 +297,68 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+                
+                currentCandidate.Ax = "A3";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+
+                candidateValues.Add(currentCandidate);
+
+                
 
             }
 
-            return candidateValues.Max();
+            candidateValues MAX = candidateValues[0];
+
+            for (int i = 1; i < candidateValues.Count(); ++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+
+            }
+
+            return MAX;
+
+
+
+
+
 
 
         }
 
 
         [HttpGet("CALCULATE A4")]
-        public double CALCULATE_A4()
+        public candidateValues CALCULATE_A4()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -274,7 +374,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i = 0; i < elements.Count; ++i)
             {
@@ -296,22 +396,63 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+                
+                currentCandidate.Ax = "A4";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+
+                candidateValues.Add(currentCandidate);
 
             }
 
-            return candidateValues.Max();
+
+            candidateValues MAX = candidateValues[0];
+
+            for (int i = 1; i < candidateValues.Count(); ++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+
+            }
+
+            return MAX;
 
 
         }
 
 
         [HttpGet("CALCULATE A5")]
-        public double CALCULATE_A5()
+        public candidateValues CALCULATE_A5()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -327,7 +468,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i = 0; i < elements.Count; ++i)
             {
@@ -349,21 +490,61 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+               
+                currentCandidate.Ax = "A5";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+
+                candidateValues.Add(currentCandidate);
 
             }
 
-            return candidateValues.Max();
+            candidateValues MAX = candidateValues[0];
+
+            for (int i = 1; i < candidateValues.Count(); ++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+
+            }
+
+            return MAX;
 
 
         }
 
         [HttpGet("CALCULATE A6")]
-        public double CALCULATE_A6()
+        public candidateValues CALCULATE_A6()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -379,7 +560,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i = 0; i < elements.Count; ++i)
             {
@@ -401,21 +582,62 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+
+                
+                currentCandidate.Ax = "A6";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+
+                candidateValues.Add(currentCandidate);
 
             }
 
-            return candidateValues.Max();
+            candidateValues MAX = candidateValues[0];
+
+            for (int i = 1; i < candidateValues.Count(); ++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+
+            }
+
+            return MAX;
 
 
         }
 
         [HttpGet("CALCULATE A7")]
-        public double CALCULATE_A7()
+        public candidateValues CALCULATE_A7()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -431,7 +653,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i = 0; i < elements.Count; ++i)
             {
@@ -453,22 +675,62 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+                
+                currentCandidate.Ax = "A7";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+
+                candidateValues.Add(currentCandidate);
 
             }
 
-            return candidateValues.Max();
+            candidateValues MAX = candidateValues[0];
+
+            for (int i = 1; i < candidateValues.Count(); ++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+
+            }
+
+            return MAX;
 
 
         }
 
 
         [HttpGet("CALCULATE A8")]
-        public double CALCULATE_A8()
+        public candidateValues CALCULATE_A8()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -484,7 +746,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i = 0; i < elements.Count; ++i)
             {
@@ -506,22 +768,62 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+                
+                currentCandidate.Ax = "A8";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+
+                candidateValues.Add(currentCandidate);
 
             }
 
-            return candidateValues.Max();
+            candidateValues MAX = candidateValues[0];
+
+            for (int i = 1; i < candidateValues.Count(); ++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+
+            }
+
+            return MAX;
 
 
         }
 
 
         [HttpGet("CALCULATE A9")]
-        public double CALCULATE_A9()
+        public candidateValues CALCULATE_A9()
         {
             var set = _context.trainingSet.ToList(); // ALL RECORDS
 
@@ -537,7 +839,7 @@ namespace CART_DECISION_TREE
 
             List<string> elements = hashset.ToList();
 
-            List<double> candidateValues = new List<double>();
+            List<candidateValues> candidateValues = new List<candidateValues>();
 
             for (int i = 0; i < elements.Count; ++i)
             {
@@ -559,55 +861,226 @@ namespace CART_DECISION_TREE
 
                 double PJTR_bad = Math.Abs(1 - PJTR_good);
 
+                candidateValues currentCandidate = new candidateValues();
+
+                if ((PJTL_good == 0 && PJTL_bad == 1) || (PJTR_good == 1 && PJTR_bad == 0))
+                {
+                    // is leaf = 1 leaf result = bad
+                    // if row.A1 == attr1 then class is exactly bad
+                    // if row.A1 == node.candidateValue.leafAttribute
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "bad";
+
+                }
+                else if ((PJTL_good == 1 && PJTL_bad == 0) || (PJTL_good == 1 && PJTL_bad == 0))
+                {
+                    // is leaf = 1 leaf result = good
+                    // if row.A1 == attr1 then class is exactly good
+                    currentCandidate.isLeaf = true;
+                    currentCandidate.leafAttribute = elements[i];
+                    currentCandidate.leafResult = "good";
+
+                }
+
+
+
                 double QST = Math.Abs(PJTL_good - PJTR_good) + Math.Abs(PJTL_bad - PJTR_bad);
 
                 double RESULT = 2 * PL * PR * QST;
 
-                candidateValues.Add(RESULT);
+                
+                currentCandidate.Ax = "A9";
+                currentCandidate.LeftVal = elements[i];
+                currentCandidate.ϕ = RESULT;
+
+                candidateValues.Add(currentCandidate);
 
             }
 
-            return candidateValues.Max();
+            candidateValues MAX = candidateValues[0];
+
+            for (int i = 1; i < candidateValues.Count(); ++i)
+            {
+                if (candidateValues[i].ϕ > MAX.ϕ)
+                {
+                    MAX = candidateValues[i];
+
+                }
+
+            }
+
+            return MAX;
 
 
         }
 
+        [HttpGet("TRAIN MODEL")]
+        public List<string> TRAIN_MODEL()
+        {
+            List<string> predictions = new List<string>();
+
+            binaryTree tree = createDecisionTreeModel();
+
+            candidateValues value1 = new candidateValues();
+
+            Node node = tree.Root;
+
+            
+            foreach (var row in _context.trainingSet)
+            {
+                var property = row.GetType().GetProperty(tree.Root.candidateValue.Ax); // INITIAL SPLIT (ACCORDING TO WHICH ROW ?) FROM ROOT 
+                var value = property.GetValue(row, null); // GET ATTRIBUTE VALUE
+
+                if (value == tree.Root.candidateValue.LeftVal) 
+                {
+                    if (node.candidateValue.isLeaf == true)
+                    {
+                        predictions.Add(node.candidateValue.leafResult);
+                    }
+                    else
+                    {
+                        if (node.Left!=null)
+                        {
+                            node = node.Left;
+
+
+                        }
+                        else
+                        {
+                            predictions.Add(node.candidateValue.leafResult);
+                        }
 
 
 
+                    }
+                }
+                else
+                {
+                    if (node.candidateValue.isLeaf == true)
+                    {
+                        predictions.Add(node.candidateValue.leafResult);
+
+                    }
+
+                    else
+                    {
+                        if (node.Right != null)
+                        {
+                           node = node.Right;
+                        }
+                        else
+                        {
+                            predictions.Add(node.candidateValue.leafResult);
+                        }
+                        
+
+                    }
+                    
+                }
+
+                while (true)
+                {
+                    if (node.Left != null || node.Right != null)
+                    {
+                        property = row.GetType().GetProperty(node.candidateValue.Ax);
+                        value = property.GetValue(row, null);                    
+
+                        if (value == node.candidateValue.LeftVal)
+                        {
+                            if (node.candidateValue.isLeaf == true) // IF LEAF NODE THEN ADD PREDICTION THEN END
+                            {
+                                predictions.Add(node.candidateValue.leafResult);
+                                continue;
+                            }
+
+                            else
+                            {
+                                if (node.Left != null)
+                                {
+
+                                    node = node.Left;
+
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+
+                            }
+
+                            
+
+                        }
+                        else
+                        {
+                            if (node.Right != null)
+                            {
+                                if (node.candidateValue.isLeaf == true)
+                                {
+                                    predictions.Add(node.candidateValue.leafResult);
+                                    continue;
+                                }
+                                else
+                                {
+                                    node = node.Right;
+                                }
+                                
+                               
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                            
+                        }
+
+                    }
+                    else
+                    {
+                        predictions.Add(row.Class);
+                        break;
+                        
+                    }
+                }
+
+            }
+
+            //System.Diagnostics.Debug.Write(string.Join("\n", predictions));
+            return predictions;
+        }
 
 
 
         [HttpGet("createDecisionTreeModel")]
-        public List<double> createDecisionTreeModel()
+        public binaryTree createDecisionTreeModel()
         {
-            List <double> results = new List<double>();
-
-
-            var decisionTree = new binaryTree<String>(); // INITIALIZE A BINARY DECISION TREE
-
-            decisionTree.Add(Math.Round(results.Max(),4).ToString()); // ROOT OF THE TREE (ACCORDING TO HIGHEST Φ VALUE AFTER CALCULATIONS)
-
-            Random random = new Random();
-
+            binaryTree tree = new binaryTree();
             
-            for (int i=0;i<9;++i)
+            List<candidateValues> calculations = new List<candidateValues>();
+
+            calculations.Add(CALCULATE_A1());
+            calculations.Add(CALCULATE_A2());
+            calculations.Add(CALCULATE_A3());
+            calculations.Add(CALCULATE_A4());
+            calculations.Add(CALCULATE_A5());
+            calculations.Add(CALCULATE_A6());
+            calculations.Add(CALCULATE_A7());
+            calculations.Add(CALCULATE_A8());
+            calculations.Add(CALCULATE_A9());
+
+            for (int i=0; i<calculations.Count();++i)
             {
-                if (results[i] != results.Max())
-                {
-                    decisionTree.Add(Math.Round(results[i], 4).ToString());
-                    //decisionTree.Add(""+random.Next(1,100));
-
-                }
-                
-
+                tree.Add(tree,calculations[i]);
 
             }
 
-     
-            Node<String>.print2D(decisionTree.Root);
+            binaryTree.PrintTree(tree);
 
-            return results;
+
+            return tree;
+
+
 
 
 

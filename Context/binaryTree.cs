@@ -1,86 +1,98 @@
-﻿using System.Xml.Linq;
+﻿
 
-public class binaryTree<T> where T : IComparable<T>
+
+using CART_DECISION_TREE.Entities;
+
+
+
+public class binaryTree
 {
-    public Node<T> Root { get; private set; } = null!;
-
-    public void Add(T value)
+    public Node Root { get; set; } = null!;
+    public void Add(binaryTree tree, candidateValues newValue)
     {
-        if (Root == null)
+
+        Node newNode = new Node();
+        newNode.candidateValue = newValue;
+        newNode.Left = null;
+        newNode.Right = null;
+
+
+        if (tree.Root == null)
         {
-            Root = new Node<T>(value);
+            tree.Root = newNode;
+            return;
         }
-        else
+
+
+        Node currentNode = tree.Root;
+
+        while (true)
         {
-            Root.Add(value);
-        }
-    }
-}
-
-public class Node<T> where T : IComparable<T>
-{
-    public T Value { get; private set; }
-    public Node<T> Left { get; private set; } = null!;
-    public Node<T> Right { get; private set; } = null!;
-
-    public Node(T value) => Value = value;
-
-    public void Add(T newValue)
-    {
-        if (newValue.CompareTo(Value) < 0)
-        {
-            if (Left == null)
+            if (newNode.candidateValue.ϕ < currentNode.candidateValue.ϕ)
             {
-                Left = new Node<T>(newValue);
+                if (currentNode.Left == null)
+                {
+                    currentNode.Left = newNode;
+                    return;
+                }
+                else
+                {
+                    currentNode = currentNode.Left;
+                }
+
             }
             else
             {
-                Left.Add(newValue);
+                if (currentNode.Right == null)
+                {
+                    currentNode.Right = newNode;
+                    return;
+                }
+                else
+                {
+                    currentNode = currentNode.Right;
+                }
             }
-        }
-        else
-        {
-            if (Right == null)
-            {
-                Right = new Node<T>(newValue);
-            }
-            else
-            {
-                Right.Add(newValue);
-            }
+
+
+
+
+
         }
     }
 
-    public static int COUNT = 15;
-
-    public static void print2DUtil(Node<T> root, int space)
+    public static void PrintTree(Node node, int level)
     {
-        // Base case
-        if (root == null)
+        if (node == null)
             return;
 
-        // Increase distance between levels
-        space += COUNT;
-
-        // Process right child first
-        print2DUtil(root.Right, space);
-
-        // Print current node after space
-        // count
-        System.Diagnostics.Debug.Write("\n");
-        for (int i = COUNT; i < space; i++)
-            System.Diagnostics.Debug.Write(" ");
-        System.Diagnostics.Debug.Write(root.Value + "\n");
-
-        // Process left child
-        print2DUtil(root.Left, space);
+        PrintTree(node.Right, level + 1);
+        System.Diagnostics.Debug.WriteLine(new string(' ', 10 * level) + node.candidateValue.Ax + " " + Math.Round(node.candidateValue.ϕ,3));
+        PrintTree(node.Left, level + 1);
     }
 
-    // Wrapper over print2DUtil()
-    public static void print2D(Node<T> root)
+    // Wrapper function to print the binary tree
+    public static void PrintTree(binaryTree tree)
     {
-        // Pass initial space count as 0
-        print2DUtil(root, 0);
+        PrintTree(tree.Root, 0);
     }
+
 }
+
+public class Node
+
+{
+    public candidateValues candidateValue { get; set; }
+    public Node Left { get; set; } = null!;
+    public Node Right { get; set; } = null!;
+
+    
+
+    
+}
+
+   
+
+    
+    
 
