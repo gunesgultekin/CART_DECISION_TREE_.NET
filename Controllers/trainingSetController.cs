@@ -932,7 +932,9 @@ namespace CART_DECISION_TREE
                 var property = row.GetType().GetProperty(tree.Root.candidateValue.Ax); // INITIAL SPLIT (ACCORDING TO WHICH ROW ?) FROM ROOT 
                 var value = property.GetValue(row, null); // GET ATTRIBUTE VALUE
 
-                if (value == tree.Root.candidateValue.LeftVal) 
+                node = tree.Root;
+                
+                if (value.ToString() == node.candidateValue.LeftVal) 
                 {
                     if (node.candidateValue.isLeaf == true)
                     {
@@ -945,14 +947,7 @@ namespace CART_DECISION_TREE
                             node = node.Left;
 
 
-                        }
-                        else
-                        {
-                            predictions.Add(node.candidateValue.leafResult);
-                        }
-
-
-
+                        }                     
                     }
                 }
                 else
@@ -969,19 +964,14 @@ namespace CART_DECISION_TREE
                         {
                            node = node.Right;
                         }
-                        else
-                        {
-                            predictions.Add(node.candidateValue.leafResult);
-                        }
-                        
-
+                                              
                     }
                     
                 }
 
-                while (true)
+                while ( true  )
                 {
-                    if (node.Left != null || node.Right != null)
+                    if ( (node.Left != null && node.Right != null) || node.candidateValue.isLeaf == true )
                     {
                         property = row.GetType().GetProperty(node.candidateValue.Ax);
                         value = property.GetValue(row, null);                    
@@ -1002,11 +992,7 @@ namespace CART_DECISION_TREE
                                     node = node.Left;
 
                                 }
-                                else
-                                {
-                                    continue;
-                                }
-
+                               
                             }
 
                             
@@ -1030,9 +1016,13 @@ namespace CART_DECISION_TREE
                             }
                             else
                             {
-                                continue;
+                                if (node.candidateValue.isLeaf == true)
+                                {
+                                    predictions.Add(node.candidateValue.leafResult);
+                                    break;
+                                }
                             }
-                            
+                                                  
                         }
 
                     }
@@ -1048,6 +1038,7 @@ namespace CART_DECISION_TREE
 
             //System.Diagnostics.Debug.Write(string.Join("\n", predictions));
             return predictions;
+            
         }
 
 
@@ -1069,7 +1060,8 @@ namespace CART_DECISION_TREE
             calculations.Add(CALCULATE_A8());
             calculations.Add(CALCULATE_A9());
 
-            for (int i=0; i<calculations.Count();++i)
+            
+            for (int i=0; i<calculations.Count() ;++i)
             {
                 tree.Add(tree,calculations[i]);
 
