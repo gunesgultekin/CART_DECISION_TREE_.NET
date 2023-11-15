@@ -915,6 +915,78 @@ namespace CART_DECISION_TREE
 
         }
 
+        [HttpGet("calculatePerformanceScores")]
+        public List<string> calculateTrainingPerformanceScores(List<string> predictions)
+        {
+            string accuracy;
+            double recall;
+            double TN_rate;
+            double precision;
+            double f_score;
+            double TP_total=0;
+            double TN_total=0;
+            double FP_total = 0;
+            double FN_total = 0;
+
+            List<trainingSet> trainingSet = _context.trainingSet.ToList();
+
+            for (int i=0; i<predictions.Count();++i)
+            {
+                
+                
+                    if (predictions[i] == trainingSet[i].Class) // IF PREDICTED CLASS == REAL TRAINING SET CLASS
+                    {
+                        if (predictions[i] == "good") // IF PREDICTION IS TRUE AND class "positive" TP
+                        {
+                            TP_total++;
+                        }
+                        else // IF PREDICTION IS TRUE AND class "negative" TN
+                        {
+                            TN_total++;
+                        }
+
+                    }
+
+                    else
+                    {
+                        if (predictions[i] == "good") // IF PREDICTION IS FALSE AND class "positive" FP
+                        {
+                            FP_total++;
+                        }
+                        else // IF PREDICTION IS FALSE AND class "negative" FN
+                        {
+                            FN_total++;
+                        }
+
+                    }
+                
+
+            }
+
+            accuracy = ((TP_total + TN_total) / predictions.Count()).ToString(CultureInfo.InvariantCulture.NumberFormat);
+
+            precision = (TP_total / (TP_total + FP_total));
+
+            double a = TP_total + FN_total;
+            recall = TP_total / a;
+
+            f_score = 2 * (precision * recall) / (precision + recall);
+
+
+
+
+            List<string> PERFORMANCE_RESULTS = new List<string>();
+            PERFORMANCE_RESULTS.Add("TP: " + TP_total.ToString(CultureInfo.InvariantCulture.NumberFormat) + " TN: " + TN_total.ToString(CultureInfo.InvariantCulture.NumberFormat)
+                +" "+" ");
+
+            return PERFORMANCE_RESULTS;
+
+
+
+
+        }
+
+
         [HttpGet("TRAIN MODEL")]
         public List<string> TRAIN_MODEL()
         {
@@ -1036,7 +1108,9 @@ namespace CART_DECISION_TREE
 
             }
 
-            //System.Diagnostics.Debug.Write(string.Join("\n", predictions));
+            List<string> PERFORMANCE_SCORES = calculateTrainingPerformanceScores(predictions);
+
+            
             return predictions;
             
         }
@@ -1060,21 +1134,43 @@ namespace CART_DECISION_TREE
             calculations.Add(CALCULATE_A8());
             calculations.Add(CALCULATE_A9());
 
-            
-            for (int i=0; i<calculations.Count() ;++i)
+
+            //candidateValues root = calculations[0];
+
+
+            /*
+            for (int i=1;i<calculations.Count();++i)
             {
-                tree.Add(tree,calculations[i]);
+                if (calculations[i].ϕ > root.ϕ)
+                {
+                    root = calculations[i];
+
+                }
+            }
+            
+
+            
+            Node rootNode = new Node();
+            rootNode.Left = null;
+            rootNode.Right = null;
+            rootNode.candidateValue = root;
+
+            tree.Root = rootNode;
+            */
+            
+            for (int i= 0; i<calculations.Count() ;++i)
+            {
+  
+                tree.Add(tree, calculations[i]);
+               
+                
+                
 
             }
-
+            
             binaryTree.PrintTree(tree);
 
-
             return tree;
-
-
-
-
 
         }
 
