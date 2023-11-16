@@ -915,7 +915,9 @@ namespace CART_DECISION_TREE
 
         }
 
-        [HttpGet("calculatePerformanceScores")]
+
+
+        [HttpGet("calculateTrainingPerformanceScores")]
         public List<string> calculateTrainingPerformanceScores(List<string> predictions)
         {
             string accuracy;
@@ -981,7 +983,72 @@ namespace CART_DECISION_TREE
 
             return PERFORMANCE_RESULTS;
 
+        }
 
+
+        [HttpGet("calculateTestPerformanceScores")]
+        public List<string> calculateTestPerformanceScores(List<string> predictions)
+        {
+            string accuracy;
+            double recall;
+            double TN_rate;
+            double precision;
+            double f_score;
+            double TP_total = 0;
+            double TN_total = 0;
+            double FP_total = 0;
+            double FN_total = 0;
+
+            List<testSet> testSet = _context.testSet.ToList();
+
+            for (int i = 0; i < predictions.Count(); ++i)
+            {
+                if (predictions[i] == testSet[i].Class) // IF PREDICTED CLASS == REAL TRAINING SET CLASS
+                {
+                    if (predictions[i] == "good") // IF PREDICTION IS TRUE AND class "positive" TP
+                    {
+                        TP_total++;
+                    }
+                    else // IF PREDICTION IS TRUE AND class "negative" TN
+                    {
+                        TN_total++;
+                    }
+
+                }
+
+                else
+                {
+                    if (predictions[i] == "good") // IF PREDICTION IS FALSE AND class "positive" FP
+                    {
+                        FP_total++;
+                    }
+                    else // IF PREDICTION IS FALSE AND class "negative" FN
+                    {
+                        FN_total++;
+                    }
+
+                }
+
+
+            }
+
+            accuracy = ((TP_total + TN_total) / predictions.Count()).ToString(CultureInfo.InvariantCulture.NumberFormat);
+
+            precision = (TP_total / (TP_total + FP_total));
+
+            double a = TP_total + FN_total;
+            recall = TP_total / a;
+
+            f_score = 2 * (precision * recall) / (precision + recall);
+
+
+
+
+            List<string> PERFORMANCE_RESULTS = new List<string>();
+            PERFORMANCE_RESULTS.Add("TP: " + TP_total.ToString(CultureInfo.InvariantCulture.NumberFormat) + " TN: " + TN_total.ToString(CultureInfo.InvariantCulture.NumberFormat)
+                + " " + " ");
+
+            return PERFORMANCE_RESULTS;
 
 
         }
@@ -990,7 +1057,9 @@ namespace CART_DECISION_TREE
         [HttpGet("TRAIN MODEL")]
         public List<string> TRAIN_MODEL()
         {
-            List<string> predictions = new List<string>();
+            List<string> trainingPredictions = new List<string>();
+
+            List<string> testPredictions = new List<string>();
 
             binaryTree tree = createDecisionTreeModel();
 
@@ -998,7 +1067,6 @@ namespace CART_DECISION_TREE
 
             Node node = tree.Root;
 
-            
             foreach (var row in _context.trainingSet)
             {
                 var property = row.GetType().GetProperty(tree.Root.candidateValue.Ax); // INITIAL SPLIT (ACCORDING TO WHICH ROW ?) FROM ROOT 
@@ -1010,7 +1078,7 @@ namespace CART_DECISION_TREE
                 {
                     if (node.candidateValue.isLeaf == true)
                     {
-                        predictions.Add(node.candidateValue.leafResult);
+                        trainingPredictions.Add(node.candidateValue.leafResult);
                     }
                     else
                     {
@@ -1026,7 +1094,7 @@ namespace CART_DECISION_TREE
                 {
                     if (node.candidateValue.isLeaf == true)
                     {
-                        predictions.Add(node.candidateValue.leafResult);
+                        trainingPredictions.Add(node.candidateValue.leafResult);
 
                     }
 
@@ -1052,7 +1120,7 @@ namespace CART_DECISION_TREE
                         {
                             if (node.candidateValue.isLeaf == true) // IF LEAF NODE THEN ADD PREDICTION THEN END
                             {
-                                predictions.Add(node.candidateValue.leafResult);
+                                trainingPredictions.Add(node.candidateValue.leafResult);
                                 continue;
                             }
 
@@ -1076,7 +1144,7 @@ namespace CART_DECISION_TREE
                             {
                                 if (node.candidateValue.isLeaf == true)
                                 {
-                                    predictions.Add(node.candidateValue.leafResult);
+                                    trainingPredictions.Add(node.candidateValue.leafResult);
                                     continue;
                                 }
                                 else
@@ -1090,7 +1158,7 @@ namespace CART_DECISION_TREE
                             {
                                 if (node.candidateValue.isLeaf == true)
                                 {
-                                    predictions.Add(node.candidateValue.leafResult);
+                                    trainingPredictions.Add(node.candidateValue.leafResult);
                                     break;
                                 }
                             }
@@ -1100,7 +1168,7 @@ namespace CART_DECISION_TREE
                     }
                     else
                     {
-                        predictions.Add(row.Class);
+                        trainingPredictions.Add(row.Class);
                         break;
                         
                     }
@@ -1108,10 +1176,131 @@ namespace CART_DECISION_TREE
 
             }
 
-            List<string> PERFORMANCE_SCORES = calculateTrainingPerformanceScores(predictions);
+
+
+            foreach (var row in _context.testSet)
+            {
+                var property = row.GetType().GetProperty(tree.Root.candidateValue.Ax); // INITIAL SPLIT (ACCORDING TO WHICH ROW ?) FROM ROOT 
+                var value = property.GetValue(row, null); // GET ATTRIBUTE VALUE
+
+                node = tree.Root;
+
+                if (value.ToString() == node.candidateValue.LeftVal)
+                {
+                    if (node.candidateValue.isLeaf == true)
+                    {
+                        testPredictions.Add(node.candidateValue.leafResult);
+                    }
+                    else
+                    {
+                        if (node.Left != null)
+                        {
+                            node = node.Left;
+
+
+                        }
+                    }
+                }
+                else
+                {
+                    if (node.candidateValue.isLeaf == true)
+                    {
+                        testPredictions.Add(node.candidateValue.leafResult);
+
+                    }
+
+                    else
+                    {
+                        if (node.Right != null)
+                        {
+                            node = node.Right;
+                        }
+
+                    }
+
+                }
+
+                while (true)
+                {
+                    if ((node.Left != null && node.Right != null) || node.candidateValue.isLeaf == true)
+                    {
+                        property = row.GetType().GetProperty(node.candidateValue.Ax);
+                        value = property.GetValue(row, null);
+
+                        if (value == node.candidateValue.LeftVal)
+                        {
+                            if (node.candidateValue.isLeaf == true) // IF LEAF NODE THEN ADD PREDICTION THEN END
+                            {
+                                testPredictions.Add(node.candidateValue.leafResult);
+                                continue;
+                            }
+
+                            else
+                            {
+                                if (node.Left != null)
+                                {
+
+                                    node = node.Left;
+
+                                }
+
+                            }
+
+
+
+                        }
+                        else
+                        {
+                            if (node.Right != null)
+                            {
+                                if (node.candidateValue.isLeaf == true)
+                                {
+                                    testPredictions.Add(node.candidateValue.leafResult);
+                                    continue;
+                                }
+                                else
+                                {
+                                    node = node.Right;
+                                }
+
+
+                            }
+                            else
+                            {
+                                if (node.candidateValue.isLeaf == true)
+                                {
+                                    testPredictions.Add(node.candidateValue.leafResult);
+                                    break;
+                                }
+                            }
+
+                        }
+
+                    }
+                    else
+                    {
+                        testPredictions.Add(row.Class);
+                        break;
+
+                    }
+                }
+
+            }
+
+
+
+
+
+
+
+
+
+            List<string> TRANINIG_PERFORMANCE_SCORES = calculateTrainingPerformanceScores(trainingPredictions);
+
+            List<string> TEST_PERFORMANCE_SCORES = calculateTestPerformanceScores(testPredictions);
 
             
-            return predictions;
+            return testPredictions;
             
         }
 
