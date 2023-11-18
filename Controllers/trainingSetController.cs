@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Intrinsics.X86;
+using System.Xml.Linq;
 
 namespace CART_DECISION_TREE
 {
@@ -918,9 +919,9 @@ namespace CART_DECISION_TREE
 
 
         [HttpGet("calculateTrainingPerformanceScores")]
-        public List<string> calculateTrainingPerformanceScores(List<string> predictions)
+        public List<double> calculateTrainingPerformanceScores(List<string> predictions)
         {
-            string accuracy;
+            double accuracy;
             double recall;
             double TN_rate;
             double precision;
@@ -965,7 +966,7 @@ namespace CART_DECISION_TREE
 
             }
 
-            accuracy = ((TP_total + TN_total) / predictions.Count()).ToString(CultureInfo.InvariantCulture.NumberFormat);
+            accuracy = ((TP_total + TN_total) / predictions.Count());
 
             precision = (TP_total / (TP_total + FP_total));
 
@@ -976,20 +977,24 @@ namespace CART_DECISION_TREE
 
 
 
+            
+            List<double> RESULTS = new List<double>();
 
-            List<string> PERFORMANCE_RESULTS = new List<string>();
-            PERFORMANCE_RESULTS.Add("TP: " + TP_total.ToString(CultureInfo.InvariantCulture.NumberFormat) + " TN: " + TN_total.ToString(CultureInfo.InvariantCulture.NumberFormat)
-                +" "+" ");
+            RESULTS.Add(accuracy);
+            RESULTS.Add(recall);
+            RESULTS.Add(precision);
+            RESULTS.Add(f_score);
+            RESULTS.Add(TP_total);
+            RESULTS.Add(TN_total);
 
-            return PERFORMANCE_RESULTS;
-
+            return RESULTS;
         }
 
 
         [HttpGet("calculateTestPerformanceScores")]
-        public List<string> calculateTestPerformanceScores(List<string> predictions)
+        public List<double>  calculateTestPerformanceScores(List<string> predictions)
         {
-            string accuracy;
+            double accuracy;
             double recall;
             double TN_rate;
             double precision;
@@ -1032,7 +1037,7 @@ namespace CART_DECISION_TREE
 
             }
 
-            accuracy = ((TP_total + TN_total) / predictions.Count()).ToString(CultureInfo.InvariantCulture.NumberFormat);
+            accuracy = ((TP_total + TN_total) / predictions.Count());
 
             precision = (TP_total / (TP_total + FP_total));
 
@@ -1043,19 +1048,25 @@ namespace CART_DECISION_TREE
 
 
 
+            List<double> RESULTS = new List<double>();
 
-            List<string> PERFORMANCE_RESULTS = new List<string>();
-            PERFORMANCE_RESULTS.Add("TP: " + TP_total.ToString(CultureInfo.InvariantCulture.NumberFormat) + " TN: " + TN_total.ToString(CultureInfo.InvariantCulture.NumberFormat)
-                + " " + " ");
+            RESULTS.Add(accuracy);
+            RESULTS.Add(recall);
+            RESULTS.Add(precision);
+            RESULTS.Add(f_score);
+            RESULTS.Add(TP_total);
+            RESULTS.Add(TN_total);
 
-            return PERFORMANCE_RESULTS;
+
+            return RESULTS;
+         
 
 
         }
 
 
         [HttpGet("TRAIN MODEL")]
-        public List<string> TRAIN_MODEL()
+        public string TRAIN_MODEL()
         {
             List<string> trainingPredictions = new List<string>();
 
@@ -1289,21 +1300,216 @@ namespace CART_DECISION_TREE
 
 
 
+            List<double> TRAINING_SCORES = calculateTrainingPerformanceScores(trainingPredictions);
+            List<double> TEST_SCORES = calculateTestPerformanceScores(testPredictions);
 
+            return "TRAINING RESULTS:\n" + "Accuracy: " + TRAINING_SCORES[0] + "\n" + "TPRate(recall): " + TRAINING_SCORES[1] + "\n" + "Precision: " + TRAINING_SCORES[2] + "\n" + "F-Score: " + TRAINING_SCORES[3] + "\n" + "TP TOTAL: " + TRAINING_SCORES[4] + "\n" + "TN TOTAL: " + TRAINING_SCORES[5] + "\n\n" +
 
+                "TEST RESULTS:\n" + "Accuracy: " + TEST_SCORES[0] + "\n" + "TPRate(recall): " + TEST_SCORES[1] + "\n" + "Precision: " + TEST_SCORES[2] + "\n" + "F-Score: " + TEST_SCORES[3] + "\n" + "TP TOTAL: " + TEST_SCORES[4] + "\n" + "TN TOTAL: " + TEST_SCORES[5];
 
-
-
-
-            List<string> TRANINIG_PERFORMANCE_SCORES = calculateTrainingPerformanceScores(trainingPredictions);
-
-            List<string> TEST_PERFORMANCE_SCORES = calculateTestPerformanceScores(testPredictions);
-
-            
-            return testPredictions;
-            
         }
 
+
+
+        // !!!!!!!!!!!!     MEMORY LEAK     !!!!!!!!!!!!!!!!!!
+
+        [HttpGet("generateRandomForest")]
+        public List<randomForestTree> generateRandomForest(int treeDensity)
+        {
+            List<binaryTree> trees = new List<binaryTree>();
+
+            for (int i=0;i<treeDensity;++i)
+            {
+                trees.Add(new binaryTree());
+
+            }
+
+            Random randomAttr = new Random();
+
+
+            List<candidateValues> attributes = new List<candidateValues>();
+
+            attributes.Add(CALCULATE_A1());
+            attributes.Add(CALCULATE_A2());
+            attributes.Add(CALCULATE_A3());
+            attributes.Add(CALCULATE_A4());
+            attributes.Add(CALCULATE_A5());
+            attributes.Add(CALCULATE_A6());
+            attributes.Add(CALCULATE_A7());
+            attributes.Add(CALCULATE_A8());
+            attributes.Add(CALCULATE_A9());
+
+            int attributeNumPerTree = 3;
+
+            for (int i=0;i<treeDensity;++i)
+            {
+                for (int j=0;j<attributeNumPerTree;++j)
+                {
+                    trees[i].Add(trees[i], attributes[randomAttr.Next(9)]);
+                }
+               
+            }
+
+            
+
+            List<randomForestTree> testPredictions = new List<randomForestTree>();
+
+
+            for (int i=0;i<treeDensity;++i) 
+            {
+                randomForestTree currentTree = new randomForestTree();
+                currentTree.treePredictions = new List<string>();
+                currentTree.treeID = i;
+
+                Node node = trees[i].Root;
+
+                foreach (var row in _context.testSet) // CALCULATE ONLY TEST DATA SET SCORES
+                {
+                    var property = row.GetType().GetProperty(node.candidateValue.Ax); // GET SPLIT ATTRIBUTE
+                    var value = property.GetValue(row, null); // GET ATTRIBUTE VALUE
+
+                    if (value.ToString() == node.candidateValue.LeftVal)
+                    {
+                        if (node.candidateValue.isLeaf)
+                        {
+                            currentTree.treePredictions.Add(node.candidateValue.leafResult);
+                            continue;
+                            
+                        }
+                        else
+                        {
+                            if (node.Left!=null)
+                            {
+                                node = node.Left;
+
+                            }
+                            else
+                            {
+                                currentTree.treePredictions.Add(row.Class);
+                                continue;
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        if (node.candidateValue.isLeaf)
+                        {
+                            currentTree.treePredictions.Add(node.candidateValue.leafResult);
+                            continue;
+
+                        }
+                        else
+                        {
+                            if (node.Right!=null)
+                            {
+                                node = node.Right;
+
+                            }
+                            else
+                            {
+                                currentTree.treePredictions.Add(row.Class);
+                                continue;
+                            }
+                        }
+
+                    }
+
+                    while (true)
+                    {
+                        if ( (node.Left == null && node.Right == null) ) // NO PLACE TO GO
+                        {
+                            currentTree.treePredictions.Add(row.Class);
+                            break;
+                        }
+
+                        else
+                        {
+                            property = row.GetType().GetProperty(node.candidateValue.Ax);
+                            value = property.GetValue(row, null);
+
+                            if (value == node.candidateValue.LeftVal)
+                            {
+                                if (node.candidateValue.isLeaf)
+                                {
+                                    currentTree.treePredictions.Add(node.candidateValue.leafResult);
+                                    break;
+                                }
+
+                                else
+                                {
+                                    if (node.Left != null)
+                                    {
+                                        node = node.Left;
+
+                                    }
+                                    else
+                                    {
+                                        currentTree.treePredictions.Add(row.Class);
+                                        break;
+                                    }
+
+                                }
+
+                            }
+
+                            else
+                            {
+                                if (node.candidateValue.isLeaf)
+                                {
+                                    currentTree.treePredictions.Add(node.candidateValue.leafResult);
+                                    break;
+
+                                }
+                                else
+                                {
+                                    if (node.Right != null)
+                                    {
+                                        node = node.Right;
+
+                                    }
+                                    else
+                                    {
+                                        currentTree.treePredictions.Add(row.Class);
+                                        break;
+                                    }
+                                }
+
+                            }
+
+
+
+                        }
+
+                    }
+
+                    testPredictions.Add(currentTree);
+                    continue;
+
+                    
+                }
+
+                
+
+                
+
+                
+
+            }
+
+            List<string> TEST_PERFORMANCE_SCORES = new List<string>();
+
+            for (int i=0;i<testPredictions.Count();++i)
+            {
+                //string current =  calculateTestPerformanceScores(testPredictions[i].treePredictions);
+
+                //TEST_PERFORMANCE_SCORES.Add(string.Format(current.ToString()));
+                   
+            }
+
+
+            return testPredictions;
+        }
 
 
         [HttpGet("createDecisionTreeModel")]
