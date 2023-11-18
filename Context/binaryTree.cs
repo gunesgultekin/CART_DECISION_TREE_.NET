@@ -67,7 +67,7 @@ public class binaryTree
             return;
 
         PrintTree(node.Right, level + 1);
-        System.Diagnostics.Debug.WriteLine(new string(' ', 10 * level) + node.candidateValue.Ax + " " + Math.Round(node.candidateValue.ϕ,3));
+        System.Diagnostics.Debug.WriteLine(new string(' ', 15 * level) +node.candidateValue.Ax + " " + Math.Round(node.candidateValue.ϕ,3));
         PrintTree(node.Left, level + 1);
     }
 

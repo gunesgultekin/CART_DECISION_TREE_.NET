@@ -1312,11 +1312,8 @@ namespace CART_DECISION_TREE
 
 
 
-
-        // !!!!!!!!!!!!     MEMORY LEAK     !!!!!!!!!!!!!!!!!!
-
         [HttpGet("generateRandomForest")]
-        public List<randomForestTree> generateRandomForest(int treeDensity)
+        public string generateRandomForest(int treeDensity)
         {
             List<binaryTree> trees = new List<binaryTree>();
 
@@ -1499,18 +1496,47 @@ namespace CART_DECISION_TREE
 
             }
 
-            List<string> TEST_PERFORMANCE_SCORES = new List<string>();
+
+            double avg_accuracy = 0;
+            double avg_recall = 0;
+            double avg_precision = 0;
+            double avg_fscore = 0;
+            double avg_tp_total = 0;
+            double avg_tn_total = 0;
+
+
+            List<double> TEST_SCORES = new List<double>();
+
+            List<double> tempList;
 
             for (int i=0;i<testPredictions.Count();++i)
             {
-                //string current =  calculateTestPerformanceScores(testPredictions[i].treePredictions);
-
-                //TEST_PERFORMANCE_SCORES.Add(string.Format(current.ToString()));
-                   
+                tempList = calculateTestPerformanceScores(testPredictions[i].treePredictions);
+                avg_accuracy += tempList[0];
+                avg_recall += tempList[1];
+                avg_precision += tempList[2];
+                avg_fscore += tempList[3];
+                avg_tp_total += tempList[4];
+                avg_tn_total += tempList[5];
             }
 
+            avg_accuracy /= testPredictions.Count();
+            avg_recall /= testPredictions.Count();
+            avg_precision /= testPredictions.Count();
+            avg_fscore /= testPredictions.Count();
+            avg_tp_total /= testPredictions.Count();
+            avg_tn_total /= testPredictions.Count();
 
-            return testPredictions;
+            TEST_SCORES.Add(avg_accuracy);
+            TEST_SCORES.Add(avg_recall);
+            TEST_SCORES.Add(avg_precision);
+            TEST_SCORES.Add(avg_fscore);
+            TEST_SCORES.Add(avg_tp_total);
+            TEST_SCORES.Add(avg_tn_total);
+
+            return "RANDOM FOREST With "+ treeDensity +" trees "+ "TEST RESULTS:\n" + "Accuracy: " + TEST_SCORES[0] + "\n" + "TPRate(recall): " + TEST_SCORES[1] + "\n" + "Precision: " + TEST_SCORES[2] + "\n" + "F-Score: " + TEST_SCORES[3] + "\n" + "TP TOTAL: " + TEST_SCORES[4] + "\n" + "TN TOTAL: " + TEST_SCORES[5];
+
+            
         }
 
 
