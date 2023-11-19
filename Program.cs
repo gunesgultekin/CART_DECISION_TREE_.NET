@@ -1,6 +1,4 @@
 
-using CART_DECISION_TREE.Interfaces;
-using CART_DECISION_TREE.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CART_DECISION_TREE
@@ -19,14 +17,9 @@ namespace CART_DECISION_TREE
 
             builder.Services.AddEndpointsApiExplorer();
 
-            
-            builder.Services.AddTransient<ItestSetRepository, testSetRepository>();
             builder.Services.AddDbContext<DBContext>(option => option.UseSqlServer(connectionConfiguration.connectionString));
 
             builder.Services.AddSwaggerGen();
-
-            
-
             
             var app = builder.Build();
 

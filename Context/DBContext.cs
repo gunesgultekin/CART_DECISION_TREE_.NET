@@ -2,6 +2,7 @@
 
 namespace CART_DECISION_TREE
 {
+    // ENTITY FRAMEWORK CONFIGURATION WITH MSSQL DATABASE
     public class DBContext : DbContext
     {
         private readonly IConfiguration config;

@@ -2,6 +2,7 @@
 {
     public class testSet
     {
+        // ENTITY FRAMEWORK - TEST DATABASE TABLE MAPPING
         public string A1 { get; set; }
         public string A2 { get; set; }
         public string A3 { get; set; }

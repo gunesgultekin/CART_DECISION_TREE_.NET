@@ -1,10 +1,7 @@
-﻿
+﻿using CART_DECISION_TREE.Entities;
 
 
-using CART_DECISION_TREE.Entities;
-
-
-
+// A CLASS USED TO PROVIDE ESSENTIAL FUNCTIONALITY OF A BINARY TREE STRUCTURE
 public class binaryTree
 {
     public Node Root { get; set; } = null!;
@@ -16,13 +13,11 @@ public class binaryTree
         newNode.Left = null;
         newNode.Right = null;
 
-
         if (tree.Root == null)
         {
             tree.Root = newNode;
             return;
         }
-
 
         Node currentNode = tree.Root;
 
@@ -53,14 +48,10 @@ public class binaryTree
                     currentNode = currentNode.Right;
                 }
             }
-
-
-
-
-
         }
     }
 
+    // Print decision node name and calculated cart value
     public static void PrintTree(Node node, int level)
     {
         if (node == null)
@@ -85,14 +76,5 @@ public class Node
     public candidateValues candidateValue { get; set; }
     public Node Left { get; set; } = null!;
     public Node Right { get; set; } = null!;
-
-    
-
-    
-}
-
    
-
-    
-    
-
+}

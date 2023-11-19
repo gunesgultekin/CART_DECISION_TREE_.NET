@@ -2,7 +2,7 @@
 {
     public class trainingSet
     {
-        //public int id {  get; set; }
+        // ENTITY FRAMEWORK - TRAINING SET DATABASE TABLE MAPPING
         public string A1 { get; set; }
         public string  A2 { get; set; }
         public string A3 { get; set; }
@@ -13,10 +13,6 @@
         public string A8 { get; set; }
         public string A9 { get; set; }
         public string Class { get; set; }
-
-
-
-
 
     }
 }
