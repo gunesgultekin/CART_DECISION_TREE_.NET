@@ -15,3 +15,14 @@ This project involves the practical application of the CART decision tree algori
 * Performance Metrics of a Random Forest with 15 CART Decision Trees, each generated using Random Subspace method with 3 attributes
 
 ![Random Forest with 15-Trees](https://github.com/gunesgultekin/CART_DECISION_TREE/assets/126399958/85169b35-4431-4b2c-97d8-a45ac736a0dd)
+
+* Performance Metrics of trained CART Model
+  
+![performanceMetrics](https://github.com/gunesgultekin/CART_DECISION_TREE/assets/126399958/b6115071-39f8-45f7-b15b-783da4a03dfb)
+
+
+## To run:
+-	Within the Context/connectionConfiguration.cs change the connectionString with your local database server connection string.
+•	Connection string format (for mssql) :
+ "Data Source= (your pc username)\\SQLEXPRESS;Initial Catalog = (your database name); Integrated Security = True; TrustServerCertificate=True";
+(!) Also your database table names should be “testSet” and “trainingSet” for Entity Framework ORM Configuration
