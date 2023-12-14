@@ -1,4 +1,6 @@
-﻿using CART_DECISION_TREE.Entities;
+﻿using Accord.MachineLearning.DecisionTrees;
+using Accord.MachineLearning.DecisionTrees.Learning;
+using CART_DECISION_TREE.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +29,48 @@ namespace CART_DECISION_TREE
         }
 
         // CALCULATE A1,......,A9 will calculate Φ VALUES FOR EACH ATTRIBUTE (A1,A2...) ACCORDING TO CART ALGORITHM
-        
+
+        static double[][] ConvertStringListToDoubleArray(List<string> stringList)
+        {
+            double[][] doubleArray = new double[stringList.Count][];
+
+            for (int i = 0; i < stringList.Count; i++)
+            {
+                string[] stringValues = stringList[i].Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                doubleArray[i] = new double[stringValues.Length];
+
+                for (int j = 0; j < stringValues.Length; j++)
+                {
+                    if (double.TryParse(stringValues[j], out double parsedValue))
+                    {
+                        doubleArray[i][j] = parsedValue;
+                    }
+                    else
+                    {
+                        // Handle parsing error if needed
+                        Console.WriteLine($"Error parsing: {stringValues[j]}");
+                    }
+                }
+            }
+
+            return doubleArray;
+        }
+
+
+        static int[] StringToIntArray(string inputString)
+        {
+            string[] rows = inputString.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            List<int> result = new List<int>();
+
+            foreach (string row in rows)
+            {
+                string[] numsStr = row.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                int[] nums = Array.ConvertAll(numsStr, int.Parse);
+                result.AddRange(nums);
+            }
+
+            return result.ToArray();
+        }
 
         [HttpGet("CALCULATE A1")]
         public candidateValues CALCULATE_A1()
@@ -1533,9 +1576,9 @@ namespace CART_DECISION_TREE
             for (int i= 0; i<calculations.Count() ;++i)
             {
                 tree.Add(tree, calculations[i]);
-              
+
             }
-            
+
             // PRINT DECISION TREE MODEL TO THE OUTPUT CONSOLE
             binaryTree.PrintTree(tree);
 
