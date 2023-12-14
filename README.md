@@ -8,10 +8,10 @@ This project involves the practical application of the CART decision tree algori
 # Example Metric Calcualtions:
 
 * Performance Metrics of a Random Forest with 100 CART Decision Trees, each generated using Random Subspace method with 3 attributes
-* 
+
   ![Random Forest with 100-Trees](https://github.com/gunesgultekin/CART_DECISION_TREE/assets/126399958/932fe920-dced-4fda-bfca-cdada82442b6)
 
 
 * Performance Metrics of a Random Forest with 15 CART Decision Trees, each generated using Random Subspace method with 3 attributes
-* 
+
 ![Random Forest with 15-Trees](https://github.com/gunesgultekin/CART_DECISION_TREE/assets/126399958/85169b35-4431-4b2c-97d8-a45ac736a0dd)
