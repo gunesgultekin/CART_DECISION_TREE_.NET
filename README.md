@@ -1,4 +1,4 @@
-## CART Decision Tree Algorithm Implementation for a specific dataset with nine attributes
+## CART Decision Tree Algorithm and Random Forest implementation in .NET
 This project involves the practical application of the CART decision tree algorithm acquired through comprehensive study in the "Machine Learning" course.
  The algorithm has been implemented using a distinctive dataset comprising 9 attributes and prediction classes denoted as "good" or "bad."
  
