@@ -3,7 +3,7 @@ This project involves the practical application of the CART decision tree algori
  The algorithm has been implemented using a dataset comprising 9 attributes and prediction classes denoted as "good" or "bad."
  
  * You can construct a CART decision tree model and assess the essential metrics, including "Accuracy," "TP Rate (recall)," "Precision," and "F-Score," across both training and test datasets.
- * Furthermore you can construct a Random Forest Ensemble with n-number of CART decision trees, each created with using "Random Subspace" method (3 random attributes), and observe he performance metrics.
+ * Furthermore you can construct a Random Forest Ensemble with n-number of CART decision trees, each created with using "Random Subspace" method (3 random attributes), and observe the performance metrics.
    
 # Example Metric Calcualtions:
 
